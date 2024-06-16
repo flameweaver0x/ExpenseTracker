@@ -1,1 +1,9 @@
-ExpenseTracker is a dynamic web application designed to help users track and manage their financial transactions efficiently. Built with modern JavaScript, it offers an intuitive interface for adding, editing, and removing transactions, while seamlessly communicating with a backend API for data persistence. Beyond transaction management, ExpenseTracker provides insightful financial reports, giving users a clear view of their financial health. Ideal for personal budgeting and expense tracking, our tool aims to simplify financial management, making it accessible to everyone.
+# ExpenseTracker
+
+ExpenseTracker is a web application for tracking expenses and income, built with Go for the backend and JavaScript (React) for the frontend.
+
+## Features
+
+- **Transaction Management**: Create, view, and manage transactions.
+- **Budget Tracking**: Monitor your budget and financial health.
+- **Financial Reports**: Generate reports based on your transactions.
