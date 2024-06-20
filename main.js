@@ -3,12 +3,13 @@ import { displayError, formatCurrency } from './utils';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Data fetching and posting
 const fetchTransactions = async () => {
   try {
     const transactions = await getTransactions();
+    const categories = await getCategories(); 
     clearTransactionsList();
     renderTransactions(transactions);
+    renderCategorySummary(transactions, categories); 
   } catch (error) {
     displayError(error);
   }
@@ -28,13 +29,17 @@ const deleteTransaction = async (id) => {
     await removeTransaction(id);
     fetchTransactions();
   } catch (error) {
-    displayError(error);
+    displayError(error); 
   }
 };
 
-// API calls
 const getTransactions = async () => {
   const response = await axios.get(`${BACKEND_URL}/transactions`);
+  return response.data;
+};
+
+const getCategories = async () => {
+  const response = await axios.get(`${BACKEND_URL}/categories`);
   return response.data;
 };
 
@@ -46,7 +51,6 @@ const removeTransaction = async (id) => {
   await axios.delete(`${BACKEND_URL}/transactions/${id}`);
 };
 
-// DOM manipulation
 const clearTransactionsList = () => {
   const transactionsList = document.getElementById('transactions-list');
   transactionsList.innerHTML = '';
@@ -55,11 +59,11 @@ const clearTransactionsList = () => {
 const renderTransactions = (transactions) => {
   const transactionsList = document.getElementById('transactions-list');
 
-  transactions.forEach(transaction => {
+  transactions.forEach((transaction) => {
     const transactionElement = document.createElement('div');
     transactionElement.classList.add('transaction');
     transactionElement.innerHTML = `
-      <p>${transaction.description}</p>
+      <p>${transaction.description} - ${transaction.category ? transaction.category : 'N/A'}</p> 
       <p>${formatCurrency(transaction.amount)}</p>
     `;
 
@@ -67,30 +71,47 @@ const renderTransactions = (transactions) => {
   });
 };
 
-// Event handling
-const handleFormSubmit = (event) = {
+const renderCategorySummary = (transactions, categories) => {
+  const summaryElement = document.getElementById('summary');
+  summaryElement.innerHTML = ''; 
+  const amountsByCategory = categories.reduce((acc, category) => {
+    const total = transactions.filter(t => t.category === category.name)
+                              .reduce((sum, t) => sum + t.amount, 0);
+    acc[category.name] = formatCurrency(total);
+    return acc;
+  }, {});
+
+  for (const [category, amount] of Object.entries(amountsByCategory)) {
+    const item = document.createElement('p');
+    item.textContent = `${category}: ${amount}`;
+    summary("summary").appendChild(item);
+  }
+};
+
+const handleFormSubmit = (event) => {
   event.preventDefault();
 
   const descriptionInput = document.getElementById('description');
   const amountInput = document.getElementById('amount');
+  const categorySelect = document.getElementById('category'); 
 
   const transaction = {
-    description: descriptionInput.value,
+    description: descriptionView.value,
     amount: parseFloat(amountInput.value),
+    category: categorySelect.value, 
   };
 
   addTransaction(transaction);
 
   descriptionInput.value = '';
   amountInput.value = '';
+  categorySelect.selectedIndex = 0; 
 };
 
-// Attach event listeners
 const setupEventListeners = () => {
   document.getElementById('transaction-form').addEventListener('submit', handleFormSubmit);
 };
 
-// Initialization
 const init = () => {
   document.addEventListener('DOMContentLoaded', fetchTransactions);
   setupEventListeners();
