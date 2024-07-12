@@ -1,45 +1,44 @@
+import React, 'react';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // You can also log the error to an error reporting service
+    console.error("Error caught by ErrorBoundary: ", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // You can render any custom fallback UI
+      return <h2>Something went wrong.</h2>;
+    }
+
+    return this.props.children; 
+  }
+}
+
 import React from 'react';
+import Footer from './Footer';
+import ErrorBoundary from './ErrorBoundary'; // Assuming ErrorBoundary is saved in the same directory
 
-const styles = {
-  footer: {
-    textAlign: 'center', 
-    padding: '20px', 
-    marginTop: '20px', 
-    backgroundColor: '#f0f0f0',
-  },
-  ul: {
-    listStyleType: 'none', 
-    padding: 0,
-  },
-  li: {
-    display: 'inline', 
-    marginRight: '10px',
-  },
-  link: {
-    textDecoration: 'none',
-  },
-};
-
-const Footer = () => {
+function App() {
   return (
-    <footer style={styles.footer}>
-      <p>ExpenseTracker © 2023</p>
-      <p>All Rights Reserved</p>
-      <nav>
-        <ul style={styles.ul}>
-          <li style={styles.li}>
-            <a href="#" style={styles.link}>Home</a>
-          </li>
-          <li style={styles.li}>
-            <a href="#" style={styles.link}>About</a>
-          </li>
-          <li style={styles.li}>
-            <a href="#" style={styles.link}>Contact Us</a>
-          </li>
-        </ul>
-      </nav>
-    </footer>
+    <div className="App">
+      <ErrorBoundary>
+        <Footer />
+        {/* Any other component that you want to protect */}
+      </ErrorBoundary>
+    </div>
   );
-};
+}
 
-export default Footer;
+export default App;
