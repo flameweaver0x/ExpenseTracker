@@ -2,26 +2,26 @@ import React, { useContext } from 'react';
 import { GlobalContext } from './GlobalState';
 
 const TransactionList = () => {
-    const { transactions, deleteTransaction, editTransaction } = useContext(GlobalContext);
+    const { transactions, removeTransaction, modifyTransaction } = useContext(Global, Context);
 
-    const handleDelete = (id) => {
-        deleteTransaction(id);
+    const handleTransactionDelete = (id) => {
+        removeTransaction(id);
     };
 
-    const handleEdit = (transaction) => {
-        editTransaction(transaction);
+    const handleTransactionEdit = (transaction) => {
+        modifyTransaction(transaction);
     };
 
     return (
         <div>
             <h3>Transaction History</h3>
             <ul className="list">
-                {transactions.map(transaction => (
+                {transactions.map((transaction) => (
                     <li key={transaction.id} className={transaction.amount < 0 ? 'minus' : 'plus'}>
-                        {transaction.description} 
+                        {transaction.description}
                         <span>{transaction.amount < 0 ? '-' : '+'}${Math.abs(transaction.amount)}</span>
-                        <button onClick={() => handleEdit(transaction)}>Edit</button>
-                        <button onClick={() => handleDelete(transaction.id)}>Delete</button>
+                        <button onClick={() => handleTransactionEdit(transaction)}>Edit</button>
+                        <button onClick={() => handleTransactionDelete(transaction.id)}>Delete</button>
                     </li>
                 ))}
             </ul>
@@ -29,4 +29,4 @@ const TransactionList = () => {
     );
 };
 
-export default TransactionList;
+export default TransactionList;
