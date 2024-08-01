@@ -1,35 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const ReportComponent = ({ transactions }) => {
-    const [totalIncome, setTotalIncome] = useState(0);
-    const [totalExpenses, setTotalExpenses] = useState(0);
-    const [balance, setBalance] = useState(0);
+const useFetchTransactions = (url) => {
+    const [data, setData] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        let income = 0;
-        let expenses = 0;
+        // Check if data is already in sessionStorage/cache
+        const cachedData = sessionStorage.getItem(url);
+        if (cachedData) {
+            setData(JSON.parse(cachedData));
+        } else {
+            setIsLoading(true);
+            axios.get(url)
+                .then(response => {
+                    // Cache data in sessionStorage
+                    sessionStorage.setItem(url, JSON.stringify(response.data));
+                    setData(response.data);
+                })
+                .catch(err => {
+                    setError(err);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
+        }
+    }, [url]);
 
-        transactions.forEach(transaction => {
-            if(transaction.amount > 0) {
-                income += transaction.amount;
-            } else {
-                expenses += transaction.amount;
-            }
-        });
-
-        setTotalIncome(income);
-        setTotalExpenses(Math.abs(expenses));
-        setBalance(income + expenses);
-    }, [transactions]);
-
-    return (
-        <div>
-            <h2>Financial Report</h2>
-            <div>Total Income: ${totalIncome}</div>
-            <div>Total Expenses: ${totalExpenses}</div>
-            <div>Balance: ${balance}</div>
-        </div>
-    );
+    return { data, isLoading, error };
 };
-
-export default ReportComponent;
