@@ -10,42 +10,57 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
 
-	router := mux.NewRouter()
-
-	router.HandleFunc("/api/transactions", handleTransactions).Methods("GET", "POST")
-	router.HandleFunc("/api/transactions/{id}", handleTransactionByID).Methods("GET", "PUT", "DELETE")
-	router.HandleFunc("/api/users", handleUsers).Methods("GET", "POST")
-	router.HandleFunc("/api/users/{id}", handleUserByID).Methods("GET", "PUT", "DELETE")
-	
-	port := os.Getenv("SERVER_PORT")
-	if port == "" {
-		port = "8080"
-	}
+	router := setupRouter()
+	port := getServerPort()
 
 	go startBackgroundTasks()
 
 	log.Printf("Server starting on port %s\n", port)
-	if err := http.ListenAndServe(":"+port, router); err != nil {
-		log.Fatalf("Error starting server: %s\n", err)
+	log.Fatal(http.ListenAndServe(":"+port, router))
+}
+
+func setupRouter() *mux.Router {
+	router := mux.NewRouter()
+	api := router.PathPrefix("/api").Subrouter()
+	setupRoutes(api)
+	return router
+}
+
+func setupRoutes(api *mux.Router) {
+	api.HandleFunc("/transactions", handleTransactions).Methods(http.MethodGet, http.MethodPost)
+	api.HandleFunc("/transactions/{id}", handleTransactionByID).Methods(http.MethodGet, http.MethodPut, http.MethodDelete)
+	api.HandleFunc("/users", handleUsers).Methods(http.MethodGet, http.MethodPost)
+	api.HandleFunc("/users/{id}", handleUserByID).Methods(http.MethodGet, http.MethodPut, http.MethodDelete)
+}
+
+func getServerPort() string {
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		port = "8080"
 	}
+	return port
 }
 
 func handleTransactions(w http.ResponseWriter, r *http.Request) {
+	// Implementation
 }
 
 func handleTransactionByID(w http.ResponseWriter, r *http.Request) {
+	// Implementation
 }
 
 func handleUsers(w http.ResponseWriter, r *http.Request) {
+	// Implementation
 }
 
 func handleUserByID(w http.ResponseWriter, r *http.Request) {
+	// Implementation
 }
 
 func startBackgroundTasks() {
+	// Background task implementation
 }
