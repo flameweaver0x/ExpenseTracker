@@ -25,8 +25,7 @@ func main() {
 
 func setupRouter() *mux.Router {
 	router := mux.NewRouter()
-	api := router.PathPrefix("/api").Subrouter()
-	setupRoutes(api)
+	setupRoutes(router.PathPrefix("/api").Subrouter())
 	return router
 }
 
