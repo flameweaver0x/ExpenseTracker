@@ -14,48 +14,68 @@ func main() {
         panic("Error loading .env file")
     }
 
+    serverPort := os.Getenv("SERVER_PORT")
+    if serverPort == "" {
+        panic("SERVER_PORT not set in .env file")
+    }
+
     r := gin.Default()
 
     // User registration route
     r.POST("/register", userRegistration)
 
     // Transaction Management routes
-    r.POST("/transactions", addTransactions) // Changed to handle multiple transactions
+    r.POST("/transactions", addTransactions)
     r.GET("/transaction/:id", getTransaction)
-    r.PUT("/transactions", updateTransactions) // Changed to handle multiple updates
-    r.DELETE("/transactions", deleteTransactions) // Changed to handle multiple deletions
+    r.PUT("/transactions", updateTransactions)
+    r.DELETE("/transactions", deleteTransactions)
 
     // Report Generation route
     r.GET("/report", generateReport)
 
-    r.Run(os.Getenv("SERVER_PORT")) // Run on port from .env
+    if err := r.Run(serverPort); err != nil {
+        panic("Failed to start the server: " + err.Error())
+    }
 }
 
-// Handlers for the routes
 func userRegistration(c *gin.Context) {
     // Implement user registration logic here
+    // For now, it's just a static response for illustration
     c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
 
-// Changed to add multiple transactions
 func addTransactions(c *gin.Context) {
+    // Placeholder: validate and parse input
+    // Return 400 Bad Request on validation error
+    
     // Implement logic to add multiple transactions here
     c.JSON(http.StatusOK, gin.H{"message": "Transactions added successfully"})
 }
 
 func getTransaction(c *gin.Context) {
+    id := c.Param("id")
+    if id == "" {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid transaction ID"})
+        return
+    }
+
     // Implement logic to get a transaction by ID here
+
     c.JSON(http.StatusOK, gin.H{"message": "Transaction retrieved successfully"})
 }
 
-// Changed to update multiple transactions
 func updateTransactions(c *gin.Context) {
+    // Placeholder: validate and parse input
+    // Return 400 Bad Request on validation error
+    
     // Implement logic to update multiple transactions here
     c.JSON(http.StatusOK, gin.H{"message": "Transactions updated successfully"})
 }
 
-// Changed to delete multiple transactions
 func deleteTransactions(c *gin.Context) {
+    // Placeholder: validate and parse input
+    // Return 400 Bad Request on validation error
+    
     // Implement logic to delete multiple transactions here
     c.JSON(http.StatusOK, gin.H{"message": "Transactions deleted successfully"})
 }
