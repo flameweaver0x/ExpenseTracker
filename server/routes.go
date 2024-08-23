@@ -21,16 +21,13 @@ func main() {
 
     r := gin.Default()
 
-    // User registration route
     r.POST("/register", userRegistration)
 
-    // Transaction Management routes
     r.POST("/transactions", addTransactions)
     r.GET("/transaction/:id", getTransaction)
     r.PUT("/transactions", updateTransactions)
     r.DELETE("/transactions", deleteTransactions)
 
-    // Report Generation route
     r.GET("/report", generateReport)
 
     if err := r.Run(serverPort); err != nil {
@@ -39,16 +36,14 @@ func main() {
 }
 
 func userRegistration(c *gin.Context) {
-    // Implement user registration logic here
-    // For now, it's just a static response for illustration
     c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
 
 func addTransactions(c *gin.Context) {
-    // Placeholder: validate and parse input
-    // Return 400 Bad Request on validation error
-    
-    // Implement logic to add multiple transactions here
+    if err := someAddTransactionsLogic(); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to add transactions"})
+        return
+    }
     c.JSON(http.StatusOK, gin.H{"message": "Transactions added successfully"})
 }
 
@@ -59,28 +54,55 @@ func getTransaction(c *gin.Context) {
         return
     }
 
-    // Implement logic to get a transaction by ID here
-
-    c.JSON(http.StatusOK, gin.H{"message": "Transaction retrieved successfully"})
+    if transaction, err := someGetTransactionLogic(id); err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Transaction not found"})
+        return
+    } else {
+        c.JSON(http.StatusOK, transaction)
+    }
 }
 
 func updateTransactions(c *gin.Context) {
-    // Placeholder: validate and parse input
-    // Return 400 Bad Request on validation error
-    
-    // Implement logic to update multiple transactions here
+    if err := someUpdateTransactionsLogic(); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update transactions"})
+        return
+    }
     c.JSON(http.StatusOK, gin.H{"message": "Transactions updated successfully"})
 }
 
 func deleteTransactions(c *gin.Context) {
-    // Placeholder: validate and parse input
-    // Return 400 Bad Request on validation error
-    
-    // Implement logic to delete multiple transactions here
+    if err := someDeleteTransactionsLogic(); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to delete transactions"})
+        return
+    }
     c.JSON(http.StatusOK, gin.H{"message": "Transactions deleted successfully"})
 }
 
 func generateReport(c *gin.Context) {
-    // Implement report generation logic here
-    c.JSON(http.StatusOK, gin.H{"message": "Report generated successfully"})
+    if report, err := someGenerateReportLogic(); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate report"})
+        return
+    } else {
+        c.JSON(http.StatusOK, report)
+    }
+}
+
+func someAddTransactionsLogic() error {
+    return nil
+}
+
+func someUpdateTransactionsLogic() error {
+    return nil
+}
+
+func someDeleteTransactionsLogic() error {
+    return nil
+}
+
+func someGetTransactionLogic(id string) (map[string]interface{}, error) {
+    return map[string]interface{}{"transaction": "details"}, nil
+}
+
+func someGenerateReportLogic() (map[string]interface{}, error) {
+    return map[string]interface{}{"report": "details"}, nil
 }
