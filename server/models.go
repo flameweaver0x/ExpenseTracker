@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"os"
 )
@@ -33,10 +34,12 @@ func initializeDB() {
 
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		log.Fatalf("failed to connect to database: %v", err)
 	}
+	log.Println("Database connection successfully established")
 
 	db.AutoMigrate(&User{}, &Transaction{})
+	log.Println("Database migration completed")
 }
 
 func createUser(c *gin.Context) {
@@ -46,33 +49,33 @@ func createUser(c *gin.Context) {
 		return
 	}
 	db.Create(&user)
+	log.Printf("User created: %s\n", user.Name)
 	c.JSON(http.StatusOK, user)
 }
 
 func listUsers(c *gin.Context) {
 	var users []User
 	db.Find(&users)
+	log.Println("Fetched list of users")
 	c.JSON(http.StatusOK, users)
 }
 
 func deleteUser(c *gin.Context) {
 	id := c.Param("id")
 	db.Delete(&User{}, id)
+	log.Printf("User deleted: %s\n", id)
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
 }
-
-// You can add similar CRUD operations for Transactions as per your requirements.
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
-	// Users routes
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+
 	r.POST("/users", createUser)
 	r.GET("/users", listUsers)
 	r.DELETE("/users/:id", deleteUser)
-
-	// Transactions routes
-	// Add your transaction endpoints here e.g., r.POST("/transactions", createTransaction)
 
 	return r
 }
@@ -80,5 +83,8 @@ func setupRouter() *gin.Engine {
 func main() {
 	initializeDB()
 	r := setupRouter()
-	r.Run(":8080") // listening and serving on localhost:8080
+	log.Println("Starting server on :8080")
+	if err := r.Run(":8080"); err != nil {
+		log.Fatalf("Error starting server: %v", err)
+	}
 }
