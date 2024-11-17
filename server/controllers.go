@@ -29,10 +29,11 @@ func init() {
 }
 
 type Transaction struct {
-    ID     int
-    UserID int
-    Amount float64
-    Date   string
+    ID        int
+    UserID    int
+    Amount    float64
+    Date      string
+    Category  string // New field for categorization
 }
 
 func CreateUser(name string, email string) error {
@@ -42,13 +43,13 @@ func CreateUser(name string, email string) error {
 
 func CreateTransactions(transactions []Transaction) error {
     valueStrings := make([]string, 0, len(transactions))
-    valueArgs := make([]interface{}, 0, len(transactions)*3) // Each transaction has 3 data points
+    valueArgs := make([]interface{}, 0, len(transactions)*4) // Updated to include category
     for i, t := range transactions {
-        valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d)", i*3+1, i*3+2, i*3+3))
-        valueArgs = append(valueArgs, t.UserID, t.Amount, t.Date)
+        valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d)", i*4+1, i*4+2, i*4+3, i*4+4))
+        valueArgs = append(valueArgs, t.UserID, t.Amount, t.Date, t.Category)
     }
-    
-    stmt := fmt.Sprintf("INSERT INTO transactions(user_id, amount, date) VALUES %s", strings.Join(valueStrings, ","))
+
+    stmt := fmt.Sprintf("INSERT INTO transactions(user_id, amount, date, category) VALUES %s", strings.Join(valueStrings, ","))
     _, err := db.Exec(stmt, valueArgs...)
     return err
 }
@@ -60,8 +61,8 @@ func GetTransactions(ids []int) ([]Transaction, error) {
         valueStrings = append(valueStrings, fmt.Sprintf("$%d", i+1))
         valueArgs = append(valueArgs, id)
     }
-    
-    query := fmt.Sprintf("SELECT id, user_id, amount, date FROM transactions WHERE id IN (%s)", strings.Join(valueStrings, ","))
+
+    query := fmt.Sprintf("SELECT id, user_id, amount, date, category FROM transactions WHERE id IN (%s)", strings.Join(valueStrings, ","))
     rows, err := db.Query(query, valueArgs...)
     if err != nil {
         return nil, err
@@ -71,12 +72,12 @@ func GetTransactions(ids []int) ([]Transaction, error) {
     var transactions []Transaction
     for rows.Next() {
         var t Transaction
-        if err := rows.Scan(&t.ID, &t.UserID, &t.Amount, &t.Date); err != nil {
+        if err := rows.Scan(&t.ID, &t.UserID, &t.Amount, &t.Date, &t.Category); err != nil {
             return nil, err
         }
         transactions = append(transactions, t)
     }
-    
+
     if err = rows.Err(); err != nil {
         return nil, err
     }
@@ -84,12 +85,20 @@ func GetTransactions(ids []int) ([]Transaction, error) {
     return transactions, nil
 }
 
+func UpdateTransactionCategory(id int, category string) error {
+    _, err := db.Exec("UPDATE transactions SET category=$1 WHERE id=$2", category, id)
+    return err
+}
+
 func main() {
     transactions := []Transaction{
-        {UserID: 1, Amount: 100.50, Date: "2023-10-04"},
-        {UserID: 2, Amount: 200.75, Date: "2023-10-05"},
+        {UserID: 1, Amount: 100.50, Date: "2023-10-04", Category: "Utilities"},
+        {UserID: 2, Amount: 200.75, Date: "2023-10-05", Category: "Groceries"},
     }
     _ = CreateTransactions(transactions)
+
+    // Example of updating a transaction's category
+    _ = UpdateTransactionCategory(1, "Entertainment") // Assuming transaction ID 1 exists
 
     ids := []int{1, 2}
     transactionsRetrieved, _ := GetTransactions(ids)
