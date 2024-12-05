@@ -6,11 +6,13 @@ import (
     "log"
     "os"
     "strings"
+    "encoding/json"
 
     _ "github.com/lib/pq"
 )
 
 var db *sql.DB
+var cache = make(map[string][]Transaction) 
 
 func init() {
     var err error
@@ -33,7 +35,7 @@ type Transaction struct {
     UserID    int
     Amount    float64
     Date      string
-    Category  string // New field for categorization
+    Category  string
 }
 
 func CreateUser(name string, email string) error {
@@ -43,7 +45,7 @@ func CreateUser(name string, email string) error {
 
 func CreateTransactions(transactions []Transaction) error {
     valueStrings := make([]string, 0, len(transactions))
-    valueArgs := make([]interface{}, 0, len(transactions)*4) // Updated to include category
+    valueArgs := make([]interface{}, 0, len(transactions)*4)
     for i, t := range transactions {
         valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d)", i*4+1, i*4+2, i*4+3, i*4+4))
         valueArgs = append(valueArgs, t.UserID, t.Amount, t.Date, t.Category)
@@ -54,7 +56,17 @@ func CreateTransactions(transactions []Transaction) error {
     return err
 }
 
+func getCacheKey(ids []int) string {
+    bytes, _ := json.Marshal(ids)
+    return string(bytes)
+}
+
 func GetTransactions(ids []int) ([]Transaction, error) {
+    cacheKey := getCacheKey(ids)
+    if cachedTransactions, found := cache[cacheKey]; found {
+        return cachedTransactions, nil 
+    }
+
     valueStrings := make([]string, 0, len(ids))
     valueArgs := make([]interface{}, 0, len(ids))
     for i, id := range ids {
@@ -81,7 +93,8 @@ func GetTransactions(ids []int) ([]Transaction, error) {
     if err = rows.Err(); err != nil {
         return nil, err
     }
-
+    
+    cache[cacheKey] = transactions 
     return transactions, nil
 }
 
@@ -97,12 +110,16 @@ func main() {
     }
     _ = CreateTransactions(transactions)
 
-    // Example of updating a transaction's category
-    _ = UpdateTransactionCategory(1, "Entertainment") // Assuming transaction ID 1 exists
+    _ = UpdateTransactionCategory(1, "Entertainment") 
 
     ids := []int{1, 2}
-    transactionsRetrieved, _ := GetTransactions(ids)
-    for _, t := range transactionsRetrieved {
-        fmt.Printf("Transaction Retrieved: %+v\n", t)
+    transactions1, _ := GetTransactions(ids)
+    for _, t := range transactions1 {
+        fmt.Printf("First Retrieval: %+v\n", t)
+    }
+
+    transactions2, _ := GetTransactions(ids)
+    for _, t := range transactions2 {
+        fmt.Printf("Second Retrieval (Cached): %+v\n", t)
     }
 }
